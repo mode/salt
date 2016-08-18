@@ -69,9 +69,11 @@ def _get_users(token):
     users = {}
     if 'message' in ret:
         for item in ret['message']:
-            if not item['is_bot']:
-                users[item['name']] = item['id']
-                users[item['id']] = item['name']
+            
+            if 'is_bot' in item and not item['is_bot']:
+                    users[item['name']] = item['id']
+                    users[item['id']] = item['name']
+                    
     return users
 
 
