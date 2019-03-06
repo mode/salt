@@ -69,17 +69,27 @@ try:
 except ImportError:
     HAS_BOTO = False
 
+try:
+    from retry import retry
+    HAS_RETRY = True
+except ImportError:
+    HAS_RETRY = False
 
 def __virtual__():
     '''
     Only load if boto libraries exist.
     '''
     if not HAS_BOTO:
-        return (False, 'The modle boto_elasticache could not be loaded: boto libraries not found')
+        return (False, 'The module boto_elasticache could not be loaded: boto libraries not found')
+
+    if not HAS_RETRY:
+        return (False, 'The module boto_elasticache could not be loaded: retry library not found')
+
     __utils__['boto.assign_funcs'](__name__, 'elasticache', pack=__salt__)
     return True
 
 
+@retry(tries=7, delay=1, backoff=2, max_delay=15)
 def exists(name, region=None, key=None, keyid=None, profile=None):
     '''
     Check to see if a cache cluster exists.
@@ -98,6 +108,7 @@ def exists(name, region=None, key=None, keyid=None, profile=None):
         return False
 
 
+@retry(tries=7, delay=1, backoff=2, max_delay=15)
 def group_exists(name, region=None, key=None, keyid=None, profile=None):
     '''
     Check to see if a replication group exists.
@@ -174,6 +185,7 @@ def delete_replication_group(name, region=None, key=None, keyid=None, profile=No
         return False
 
 
+@retry(tries=7, delay=1, backoff=2, max_delay=15)
 def describe_replication_group(name, region=None, key=None, keyid=None,
                                profile=None, parameter=None):
     '''
@@ -237,6 +249,7 @@ def describe_replication_group(name, region=None, key=None, keyid=None,
     return ret
 
 
+@retry(tries=7, delay=1, backoff=2, max_delay=15)
 def get_config(name, region=None, key=None, keyid=None, profile=None):
     '''
     Get the configuration for a cache cluster.
@@ -303,6 +316,7 @@ def get_config(name, region=None, key=None, keyid=None, profile=None):
     return ret
 
 
+@retry(tries=7, delay=1, backoff=2, max_delay=15)
 def get_node_host(name, region=None, key=None, keyid=None, profile=None):
     '''
     Get hostname from cache node
@@ -329,6 +343,7 @@ def get_node_host(name, region=None, key=None, keyid=None, profile=None):
     return host
 
 
+@retry(tries=7, delay=1, backoff=2, max_delay=15)
 def get_group_host(name, region=None, key=None, keyid=None, profile=None):
     '''
     Get hostname from replication cache group
@@ -355,6 +370,7 @@ def get_group_host(name, region=None, key=None, keyid=None, profile=None):
     return host
 
 
+@retry(tries=7, delay=1, backoff=2, max_delay=15)
 def get_all_cache_subnet_groups(name=None, region=None, key=None,
                                 keyid=None, profile=None):
     '''
@@ -383,6 +399,7 @@ def get_all_cache_subnet_groups(name=None, region=None, key=None,
         return []
 
 
+@retry(tries=7, delay=1, backoff=2, max_delay=15)
 def list_cache_subnet_groups(name=None, region=None, key=None,
                              keyid=None, profile=None):
     '''
@@ -396,6 +413,7 @@ def list_cache_subnet_groups(name=None, region=None, key=None,
             get_all_cache_subnet_groups(name, region, key, keyid, profile)]
 
 
+@retry(tries=7, delay=1, backoff=2, max_delay=15)
 def subnet_group_exists(name, tags=None, region=None, key=None, keyid=None, profile=None):
     '''
     Check to see if an ElastiCache subnet group exists.
@@ -464,6 +482,7 @@ def create_subnet_group(name, description, subnet_ids=None, subnet_names=None, t
         return False
 
 
+@retry(tries=7, delay=1, backoff=2, max_delay=15)
 def get_cache_subnet_group(name, region=None, key=None, keyid=None,
                            profile=None):
     '''
