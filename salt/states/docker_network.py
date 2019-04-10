@@ -50,7 +50,11 @@ def __virtual__():
     return (False, __salt__.missing_fun_string('docker.version'))
 
 
-def present(name, driver=None, containers=None):
+def present(name,
+            driver=None,
+            containers=None,
+            options=None,
+            ipam=None):
     '''
     Ensure that a network is present.
 
@@ -62,6 +66,12 @@ def present(name, driver=None, containers=None):
 
     containers:
         List of container names that should be part of this network
+
+    options
+        Network specific options to be used by the drivers
+
+    ipam
+        Optional custom IP scheme for the network
 
     Usage Examples:
 
@@ -127,7 +137,10 @@ def present(name, driver=None, containers=None):
             return ret
         try:
             ret['changes']['created'] = __salt__['docker.create_network'](
-                name, driver=driver)
+                                            name,
+                                            driver=driver,
+                                            options=options,
+                                            ipam=ipam)
         except Exception as exc:
             ret['comment'] = ('Failed to create network \'{0}\': {1}'
                               .format(name, exc))

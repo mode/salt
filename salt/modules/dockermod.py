@@ -1302,11 +1302,9 @@ def images(verbose=False, **kwargs):
             if img_id is None:
                 continue
             for item in img:
-                img_state = ('untagged' if
-                             img['RepoTags'] in (
-                               ['<none>:<none>'],  # docker API <1.24
-                               None,  # docker API >=1.24
-                             ) else 'tagged')
+                img_state = 'untagged' \
+                    if img['RepoTags'] == ['<none>:<none>'] \
+                    else 'tagged'
                 bucket = __context__.setdefault('docker.images', {})
                 bucket = bucket.setdefault(img_state, {})
                 img_key = key_map.get(item, item)
@@ -1493,9 +1491,12 @@ def list_containers(**kwargs):
     return sorted(ret)
 
 
-def list_tags():
+def list_tags(repo=None):
     '''
     Returns a list of tagged images
+
+    repo : None
+        If set to an image repo name, will only return tags for that image.
 
     CLI Example:
 
@@ -1504,10 +1505,13 @@ def list_tags():
         salt myminion docker.list_tags
     '''
     ret = set()
+    prefix = '' if repo is None else repo + ':'
+
     for item in six.itervalues(images()):
-        if not item.get('RepoTags'):
-            continue
-        ret.update(set(item['RepoTags']))
+        for repo_tag in (item.get('RepoTags') or []):
+
+            if repo_tag.startswith(prefix):
+                ret.add(repo_tag)
     return sorted(ret)
 
 
@@ -4110,7 +4114,7 @@ def networks(names=None, ids=None):
     return response
 
 
-def create_network(name, driver=None):
+def create_network(name, driver=None, options=None, ipam=None):
     '''
     Create a new network
 
@@ -4120,13 +4124,23 @@ def create_network(name, driver=None):
     driver
         Driver of the network
 
+    options
+        Network specific options to be used by the drivers
+
+    ipam
+        Optional custom IP scheme for the network
+
     CLI Example:
 
     .. code-block:: bash
 
         salt myminion docker.create_network web_network driver=bridge
     '''
-    response = _client_wrapper('create_network', name, driver=driver)
+    response = _client_wrapper('create_network',
+                               name,
+                               driver=driver,
+                               options=options,
+                               ipam=ipam)
     _clear_context()
     # Only non-error return case is a True return, so just return the response
     return response
